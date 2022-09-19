@@ -13,22 +13,12 @@ resource "azurerm_virtual_network" "zero-vnet" {
   ]
 }
 
-resource "azurerm_availability_set" "zero-as" {
-  name                         = "webvm-as"
-  location                     = azurerm_resource_group.zero-rg.location
-  resource_group_name          = azurerm_resource_group.zero-rg.name
-  platform_fault_domain_count  = 2
-  platform_update_domain_count = 2
-  depends_on = [
-    azurerm_resource_group.zero-rg
-  ]
-}
-
 resource "azurerm_public_ip" "zero-agw_pip" {
   name                = "agw-pip"
   resource_group_name = azurerm_resource_group.zero-rg.name
   location            = azurerm_resource_group.zero-rg.location
-  allocation_method   = "Dynamic"
+  allocation_method   = "Static"
+  sku                 = "Standard"
 }
 
 resource "azurerm_application_gateway" "zero-appgw" {
@@ -37,8 +27,8 @@ resource "azurerm_application_gateway" "zero-appgw" {
   location            = azurerm_resource_group.zero-rg.location
 
   sku {
-    name     = "Standard_Small"
-    tier     = "Standard"
+    name     = "Standard_v2"
+    tier     = "Standard_v2"
     capacity = 1
   }
 
@@ -59,17 +49,27 @@ resource "azurerm_application_gateway" "zero-appgw" {
 
   backend_address_pool {
     name = "imagepool"
-    # ip_addresses = [ 
-    #   "${azurerm_network_interface.zero-nic.private_ip_address}" ]
   }
 
   backend_http_settings {
     name                  = "http-setting"
     cookie_based_affinity = "Disabled"
     # path                  = ""
-    port                  = 80
-    protocol              = "Http"
-    request_timeout       = 60
+    port            = 80
+    protocol        = "Http"
+    request_timeout = 60
+    probe_name      = "be-probe"
+  }
+
+  probe {
+    name                = "be-probe"
+    host                = "127.0.0.1"
+    interval            = 30
+    timeout             = 30
+    unhealthy_threshold = 3
+    protocol            = "Http"
+    port                = 80
+    path                = "/images/default.html"
   }
 
   http_listener {
@@ -80,10 +80,11 @@ resource "azurerm_application_gateway" "zero-appgw" {
   }
 
   request_routing_rule {
-    name               = "RoutingRule"
-    rule_type          = "Basic"
-    http_listener_name = "listener"
-    backend_address_pool_name = "imagepool"
+    name                       = "RoutingRule"
+    rule_type                  = "Basic"
+    http_listener_name         = "listener"
+    backend_address_pool_name  = "imagepool"
     backend_http_settings_name = "http-setting"
+    priority                   = 10
   }
 }

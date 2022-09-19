@@ -1,4 +1,3 @@
-# terraform-agw-2winvm
+# terraform-agw-vmss
 
 It works nicely^^
-# terraform-agw-vmss
