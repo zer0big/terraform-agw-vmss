@@ -1,3 +1,8 @@
+locals {
+  resource_group_name = "RG-KV4TF"
+  location            = "Korea Central"
+}
+
 data "azurerm_client_config" "current" {}
 
 # Pull existing Key Vault from Azure

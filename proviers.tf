@@ -7,6 +7,13 @@ terraform {
       version = ">=3.0"
     }
   }
+  # Backend Block
+  backend "azurerm" {
+    resource_group_name  = "RG-TF-STATE"
+    storage_account_name = "tfstate4azuresa"
+    container_name       = "tfstate"
+    key                  = "azuresa-tfstate"
+  }
 }
 
 # Provider Block

@@ -1,5 +1,5 @@
-resource "azurerm_windows_virtual_machine_scale_set" "zero-vmss" {
-  name                 = "zero-vmss"
+resource "azurerm_windows_virtual_machine_scale_set" "win-vmss" {
+  name                 = "win-vmss"
   computer_name_prefix = "zb"
   resource_group_name  = azurerm_resource_group.zero-rg.name
   location             = azurerm_resource_group.zero-rg.location
@@ -22,7 +22,7 @@ resource "azurerm_windows_virtual_machine_scale_set" "zero-vmss" {
   }
 
   network_interface {
-    name    = "vmss-inc"
+    name    = "vmss-nic"
     primary = true
 
     ip_configuration {
@@ -39,26 +39,26 @@ resource "azurerm_windows_virtual_machine_scale_set" "zero-vmss" {
   ]
 }
 
-resource "azurerm_network_interface" "zero-nic" {
-  name                = "web-nic"
-  location            = azurerm_resource_group.zero-rg.location
-  resource_group_name = azurerm_resource_group.zero-rg.name
+# resource "azurerm_network_interface" "vmss-nic" {
+#   name                = "web-nic"
+#   location            = azurerm_resource_group.zero-rg.location
+#   resource_group_name = azurerm_resource_group.zero-rg.name
 
-  ip_configuration {
-    name                          = "internal"
-    subnet_id                     = azurerm_subnet.web-subnet.id
-    private_ip_address_allocation = "Dynamic"
-  }
+#   ip_configuration {
+#     name                          = "internal"
+#     subnet_id                     = azurerm_subnet.web-subnet.id
+#     private_ip_address_allocation = "Dynamic"
+#   }
 
-  depends_on = [
-    azurerm_virtual_network.zero-vnet,
-    azurerm_subnet.web-subnet
-  ]
-}
+#   depends_on = [
+#     azurerm_virtual_network.zero-vnet,
+#     azurerm_subnet.web-subnet
+#   ]
+# }
 
-resource "azurerm_virtual_machine_scale_set_extension" "zero-vmss_extension" {
+resource "azurerm_virtual_machine_scale_set_extension" "win-vmss_extension" {
   name                         = "webvmss-extension"
-  virtual_machine_scale_set_id = azurerm_windows_virtual_machine_scale_set.zero-vmss.id
+  virtual_machine_scale_set_id = azurerm_windows_virtual_machine_scale_set.win-vmss.id
   publisher                    = "Microsoft.Compute"
   type                         = "CustomScriptExtension"
   type_handler_version         = "1.10"
