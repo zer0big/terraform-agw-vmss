@@ -17,8 +17,9 @@ resource "azurerm_public_ip" "zero-agw_pip" {
   name                = "agw-pip"
   resource_group_name = azurerm_resource_group.zero-rg.name
   location            = azurerm_resource_group.zero-rg.location
-  allocation_method   = "Static"
-  sku                 = "Standard"
+  allocation_method   = "Dynamic"
+  # allocation_method   = "Static" //appgateway with SKU WAF can only reference public ip with Basic SKU.
+  # sku                 = "Standard" //appgateway with SKU WAF can only reference public ip with Basic SKU.
 }
 
 resource "azurerm_application_gateway" "zero-appgw" {
@@ -27,8 +28,8 @@ resource "azurerm_application_gateway" "zero-appgw" {
   location            = azurerm_resource_group.zero-rg.location
 
   sku {
-    name     = "Standard_v2"
-    tier     = "Standard_v2"
+    name     = "WAF_Medium"
+    tier     = "WAF"
     capacity = 1
   }
 
@@ -58,19 +59,19 @@ resource "azurerm_application_gateway" "zero-appgw" {
     port            = 80
     protocol        = "Http"
     request_timeout = 60
-    probe_name      = "be-probe"
+    # probe_name      = "be-probe" ////probe does not support Priority for the selected SKU tier WAF.
   }
 
-  probe {
-    name                = "be-probe"
-    host                = "127.0.0.1"
-    interval            = 30
-    timeout             = 30
-    unhealthy_threshold = 3
-    protocol            = "Http"
-    port                = 80
-    path                = "/images/default.html"
-  }
+  # probe {
+  #   name                = "be-probe"
+  #   host                = "127.0.0.1"
+  #   interval            = 30
+  #   timeout             = 30
+  #   unhealthy_threshold = 3
+  #   protocol            = "Http"
+  #   port                = 80
+  #   path                = "/images/default.html"
+  # }
 
   http_listener {
     name                           = "listener"
@@ -85,6 +86,6 @@ resource "azurerm_application_gateway" "zero-appgw" {
     http_listener_name         = "listener"
     backend_address_pool_name  = "imagepool"
     backend_http_settings_name = "http-setting"
-    priority                   = 10
+    # priority                   = 10   //RoutingRule does not support Priority for the selected SKU tier WAF.
   }
 }
